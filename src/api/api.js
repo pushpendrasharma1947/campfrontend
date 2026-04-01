@@ -1,27 +1,25 @@
 import axios from "axios";
 
-const TOKEN_KEY = "campuskart_token";
+const TOKEN_STORAGE_KEY = "campuskart_token";
 
 function getToken() {
   try {
-    return localStorage.getItem(TOKEN_KEY) || "";
+    return localStorage.getItem(TOKEN_STORAGE_KEY) || "";
   } catch {
     return "";
   }
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api", // ✅ fixed
   timeout: 10000,
 });
 
 api.interceptors.request.use((config) => {
   const token = getToken();
-
-if (token && config.headers) {
-  config.headers.Authorization = `Bearer ${token}`;
-}
-
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 

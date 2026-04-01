@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -19,8 +21,14 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await api.post("/auth/register", form);
-      navigate("/login", { replace: true });
+      const { data } = await api.post("/auth/register", form);
+      const token = data?.token || data?.accessToken || "";
+      if (!token) {
+        throw new Error("Invalid response from server");
+      }
+
+      login(token);
+      navigate("/", { replace: true });
     } catch (err) {
       console.error(err);
       setError("Registration failed. Please try again.");
